@@ -152,5 +152,29 @@ public class BasicController {
         String headerValue="attachment;filename=template.xls";
         response.setHeader(headerKey,headerValue);
         exportExcelServicce.ExportExcel(response);
+    }  @GetMapping("Exportexcel")
+    public void generateExcelExport(HttpServletResponse response) throws Exception {
+        response.setContentType("application/octet-stream");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment;filename=template.xls";
+        response.setHeader(headerKey, headerValue);
+        exportExcelServicce.ExportExcel(response);
+    }
+
+    @PostMapping("/Importexcel")
+    public String generateExcelImport(@RequestParam("file") MultipartFile file, Model model) {
+        try {
+            if (file == null || file.isEmpty()) {
+                model.addAttribute("errorMessage", "File không được để trống.");
+            } else if (!importExcelService.isValidExcelFile(file)) {
+                model.addAttribute("errorMessage", "File không đúng định dạng Excel.");
+            } else {
+                 importExcelService.saveStaffsToDatabase(file);
+                return "redirect:/detailStaff/" + idStaff;
+            }
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", "Dữ liệu trong tệp tin không hợp lệ: " + e.getMessage());
+        }
+        return "redirect:/detailStaff/" + idStaff;
     }
 }
